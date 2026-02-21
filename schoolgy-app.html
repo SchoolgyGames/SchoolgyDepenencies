@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Schoolgy 5.0</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@700&family=UnifrakturMaguntia&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --purple:#7c3aed;
+  --purple2:#a855f7;
+  --cyan:#22d3ee;
+  --card:rgba(15,23,42,0.85);
+  --border:rgba(255,255,255,0.12);
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;min-height:100%;background:black;}
+
+body{
+  font-family:'Segoe UI',sans-serif;
+  color:#fff;
+  animation:pageFade 1s ease both;
+  opacity:0;
+}
+@keyframes pageFade{to{opacity:1;}}
+
+/* ---- Video ---- */
+#bg-video{
+  position:fixed; top:50%; left:50%;
+  min-width:100vw; min-height:100vh;
+  width:auto; height:auto;
+  transform:translate(-50%,-50%) scale(1.04);
+  object-fit:cover;
+  z-index:-10;
+  filter:contrast(1.3) brightness(0.85) saturate(1.5);
+  transition:opacity 1s ease;
+}
+
+/* ---- Overlay ---- */
+.topo-overlay{
+  position:fixed; inset:0; z-index:-9; pointer-events:none;
+  background:
+    radial-gradient(circle at 25% 35%, rgba(168,85,247,0.22), transparent 50%),
+    radial-gradient(circle at 75% 65%, rgba(124,58,237,0.2), transparent 50%),
+    linear-gradient(180deg, rgba(10,10,20,0.2), rgba(5,5,15,0.88));
+}
+
+/* ---- Floating particles ---- */
+.particles{position:fixed;inset:0;pointer-events:none;z-index:-8;}
+.particle{
+  position:absolute; border-radius:50%;
+  background:rgba(168,85,247,0.5);
+  animation:floatUp linear infinite;
+}
+@keyframes floatUp{
+  0%{transform:translateY(100vh) scale(0);opacity:0;}
+  10%{opacity:1;} 90%{opacity:0.3;}
+  100%{transform:translateY(-5vh) scale(1);opacity:0;}
+}
+
+/* ---- Top Bar ---- */
+.top-bar{
+  position:fixed; top:0; left:0; right:0;
+  padding:0.9rem 2rem;
+  z-index:100;
+  display:flex; align-items:center; justify-content:space-between;
+  backdrop-filter:blur(8px) saturate(150%);
+  background:rgba(8,5,20,0.4);
+  border-bottom:1px solid rgba(168,85,247,0.3);
+  transition:transform 0.35s ease, opacity 0.35s ease;
+}
+.top-bar.hidden{transform:translateY(-100%);opacity:0;pointer-events:none;}
+
+.top-bar-title{
+  font-family:'Amatic SC',cursive; font-size:1.9rem;
+  background:linear-gradient(90deg,#ede9fe,#c4b5fd,#a855f7);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  animation:titleGlow 4s ease infinite;
+}
+@keyframes titleGlow{
+  0%,100%{filter:drop-shadow(0 0 4px rgba(168,85,247,0.4));}
+  50%{filter:drop-shadow(0 0 12px rgba(168,85,247,0.8));}
+}
+
+/* ---- Settings Button ---- */
+.settings-btn{
+  font-family:'Amatic SC',cursive; font-size:1.5rem;
+  color:rgba(196,181,253,0.7);
+  background:none; border:none; cursor:pointer;
+  display:flex; align-items:center; gap:7px;
+  padding:5px 12px; border-radius:8px;
+  transition:color 0.2s, background 0.2s;
+}
+.settings-btn:hover{color:#c4b5fd;background:rgba(168,85,247,0.15);}
+.settings-btn svg{width:17px;height:17px;transition:transform 0.5s ease;}
+.settings-btn:hover svg{transform:rotate(65deg);}
+
+/* ---- Settings Overlay ---- */
+#settingsOverlay{
+  position:fixed;inset:0;z-index:500;
+  display:flex;align-items:center;justify-content:center;
+  pointer-events:none;opacity:0;
+  transition:opacity 0.3s ease;
+}
+#settingsOverlay.open{opacity:1;pointer-events:all;}
+
+.settings-backdrop{
+  position:absolute;inset:0;
+  background:rgba(4,2,12,0.8);
+  backdrop-filter:blur(16px);
+}
+.settings-panel{
+  position:relative;z-index:1;
+  width:min(93vw,580px);
+  background:rgba(10,6,25,0.97);
+  border:1px solid rgba(168,85,247,0.4);
+  border-radius:22px;
+  box-shadow:0 0 80px rgba(124,58,237,0.4),0 0 160px rgba(168,85,247,0.12),inset 0 1px 0 rgba(255,255,255,0.06);
+  transform:translateY(32px) scale(0.96);
+  transition:transform 0.4s cubic-bezier(0.34,1.5,0.64,1);
+  overflow:hidden;
+}
+#settingsOverlay.open .settings-panel{transform:translateY(0) scale(1);}
+
+.sp-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1.5rem 1.8rem 1rem;
+  border-bottom:1px solid rgba(168,85,247,0.15);
+}
+.sp-title{
+  font-family:'Amatic SC',cursive;font-size:2.5rem;
+  background:linear-gradient(90deg,#ede9fe,#c4b5fd,#a855f7);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.sp-close{
+  background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
+  color:rgba(196,181,253,0.6);
+  width:34px;height:34px;border-radius:50%;font-size:1.1rem;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:background 0.2s,color 0.2s;
+}
+.sp-close:hover{background:rgba(168,85,247,0.25);color:#fff;}
+
+.sp-body{padding:1.5rem 1.8rem 2rem;}
+.sp-label{
+  font-family:'Amatic SC',cursive;font-size:1.25rem;
+  color:rgba(196,181,253,0.4);letter-spacing:0.1em;text-transform:uppercase;
+  margin-bottom:0.9rem;
+}
+
+/* ---- Cloak grid ---- */
+.cloak-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;
+  margin-bottom:1.3rem;max-height:260px;overflow-y:auto;
+  padding-right:4px;
+}
+.cloak-grid::-webkit-scrollbar{width:4px;}
+.cloak-grid::-webkit-scrollbar-thumb{background:rgba(168,85,247,0.35);border-radius:3px;}
+
+.cloak-card{
+  background:rgba(255,255,255,0.03);
+  border:2px solid rgba(255,255,255,0.07);
+  border-radius:12px;padding:0.85rem 0.6rem;
+  cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;
+  transition:border-color 0.2s,background 0.2s,transform 0.15s;text-align:center;
+}
+.cloak-card:hover{background:rgba(168,85,247,0.08);border-color:rgba(168,85,247,0.4);transform:translateY(-2px);}
+.cloak-card.active{border-color:#a855f7;background:rgba(168,85,247,0.13);box-shadow:0 0 16px rgba(168,85,247,0.3);}
+
+.cloak-card img{width:28px;height:28px;object-fit:contain;border-radius:5px;}
+.cloak-card-name{font-size:0.72rem;font-weight:500;color:#c4b5fd;line-height:1.3;}
+.cloak-card-tab{font-family:'Amatic SC',cursive;font-size:0.9rem;color:rgba(196,181,253,0.45);line-height:1.2;}
+
+.cloak-apply{
+  width:100%;padding:0.8rem;
+  background:linear-gradient(90deg,#7c3aed,#a855f7);
+  border:none;border-radius:12px;color:#fff;
+  font-family:'Amatic SC',cursive;font-size:1.5rem;cursor:pointer;
+  letter-spacing:0.05em;
+  box-shadow:0 0 20px rgba(168,85,247,0.4);
+  transition:opacity 0.2s,transform 0.15s;
+}
+.cloak-apply:hover{opacity:0.88;transform:translateY(-1px);}
+.cloak-status{font-family:'Amatic SC',cursive;font-size:1.1rem;color:rgba(196,181,253,0.4);text-align:center;margin-top:0.8rem;}
+
+/* ---- Layout ---- */
+main{
+  position:relative;z-index:10;
+  padding:7rem 1.5rem 3rem;
+  max-width:1200px;margin:auto;text-align:center;
+}
+
+/* ---- Hero ---- */
+.hero-wrapper{margin-bottom:2.5rem;}
+
+.hero-title{
+  font-family:'UnifrakturMaguntia',cursive;
+  font-size:clamp(4rem,10vw,7rem);
+  line-height:1.05;
+  background:linear-gradient(90deg,#fff,#ddd6fe,#c4b5fd,#fff);
+  background-size:300% 300%;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  animation:glowShift 6s ease infinite, heroIn 1s ease both;
+  animation-delay:0s, 0.2s;
+}
+@keyframes glowShift{0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;}}
+@keyframes heroIn{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+
+.hero-subtext{
+  font-family:'Amatic SC',cursive;font-size:2rem;
+  opacity:0.8;margin-bottom:3rem;
+  animation:heroIn 1s ease both;animation-delay:0.4s;
+}
+
+/* ---- Search ---- */
+.search-container{
+  max-width:620px;margin:0 auto 3rem;position:relative;
+  animation:heroIn 1s ease both;animation-delay:0.6s;
+}
+.search-container::before{
+  content:"";position:absolute;inset:-3px;border-radius:18px;
+  background:linear-gradient(120deg,rgba(124,58,237,0.85),rgba(168,85,247,0.85),rgba(124,58,237,0.85));
+  filter:blur(22px);opacity:0.6;z-index:-1;
+  animation:searchGlow 4s ease infinite;
+}
+@keyframes searchGlow{0%,100%{opacity:0.5;filter:blur(22px);}50%{opacity:0.8;filter:blur(28px);}}
+
+#searchBar{
+  width:100%;padding:1.25rem 1.6rem;
+  border-radius:18px;border:1px solid rgba(255,255,255,0.15);
+  background:rgba(18,8,38,0.7);
+  backdrop-filter:blur(16px) saturate(160%);
+  color:white;font-size:1.05rem;outline:none;
+  transition:border-color 0.2s;
+}
+#searchBar:focus{border-color:rgba(168,85,247,0.5);}
+#searchBar::placeholder{color:rgba(196,181,253,0.35);}
+
+/* ---- Grid ---- */
+.zone-container{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(175px,1fr));
+  gap:18px;
+}
+
+.zone-item{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;overflow:hidden;cursor:pointer;
+  transition:transform 0.3s ease, border-color 0.3s, box-shadow 0.3s;
+  animation:cardIn 0.5s ease both;
+}
+@keyframes cardIn{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+
+.zone-item:hover{
+  transform:translateY(-7px) scale(1.03);
+  border-color:var(--purple2);
+  box-shadow:0 0 35px rgba(168,85,247,0.4), 0 8px 24px rgba(0,0,0,0.4);
+}
+.zone-item img{width:100%;aspect-ratio:1;object-fit:cover;display:block;}
+.zone-item .name-btn{
+  background:none;border:none;color:#fff;
+  padding:10px 12px;font-weight:600;font-size:0.85rem;
+  width:100%;height:55px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  line-height:1.3;
+}
+
+/* ---- Viewer ---- */
+#zoneViewer{
+  position:fixed;inset:0;background:rgba(0,0,0,0.97);
+  display:none;flex-direction:column;z-index:999;
+  animation:viewerIn 0.25s ease both;
+}
+@keyframes viewerIn{from{opacity:0;}to{opacity:1;}}
+
+.zone-header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:0.65rem 1rem;
+  background:rgba(12,6,28,0.97);
+  border-bottom:1px solid rgba(168,85,247,0.2);
+}
+.zone-controls{display:flex;gap:8px;}
+.zone-controls button{
+  background:rgba(255,255,255,0.05);border:1px solid var(--border);
+  color:white;padding:0.35rem 0.8rem;border-radius:6px;cursor:pointer;
+  font-size:0.85rem;transition:background 0.2s;
+}
+.zone-controls button:hover{background:rgba(168,85,247,0.15);}
+
+#zoneFrame{flex-grow:1;border:none;width:100%;}
+</style>
+</head>
+<body>
+
+<video id="bg-video" autoplay muted loop playsinline>
+  <source src="https://raw.githubusercontent.com/SchoolgyGames/SchoolgyDepenencies/main/abstract-purple-topo.1920x1080.mp4" type="video/mp4">
+</video>
+
+<div class="topo-overlay"></div>
+<div class="particles" id="particles"></div>
+
+<!-- TOP BAR -->
+<div class="top-bar" id="topBar">
+  <span class="top-bar-title">Schoolgy 5.0</span>
+  <button class="settings-btn" onclick="openSettings()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+    </svg>
+    Settings
+  </button>
+</div>
+
+<!-- SETTINGS OVERLAY -->
+<div id="settingsOverlay">
+  <div class="settings-backdrop" onclick="closeSettings()"></div>
+  <div class="settings-panel">
+    <div class="sp-header">
+      <span class="sp-title">⚙ Settings</span>
+      <button class="sp-close" onclick="closeSettings()">✕</button>
+    </div>
+    <div class="sp-body">
+      <div class="sp-label">Tab Cloak</div>
+      <div class="cloak-grid" id="cloakGrid"></div>
+      <button class="cloak-apply" onclick="applyCloak()">Apply Cloak</button>
+      <div class="cloak-status" id="cloakStatus">Loading cloaks...</div>
+    </div>
+  </div>
+</div>
+
+<main>
+  <div class="hero-wrapper">
+    <h1 class="hero-title">Welcome to<br>Schoolgy 5.0</h1>
+  </div>
+  <p class="hero-subtext">Idk what to put here</p>
+  <div class="search-container">
+    <input type="text" id="searchBar" placeholder="Search games..." oninput="filterZones()">
+  </div>
+  <div id="container" class="zone-container">
+    <p style="grid-column:1/-1;font-family:'Amatic SC',cursive;font-size:1.6rem;color:rgba(196,181,253,0.5);padding:2rem">Loading games...</p>
+  </div>
+</main>
+
+<div id="zoneViewer">
+  <div class="zone-header">
+    <h2 id="zoneName" style="font-family:'Amatic SC',cursive;font-size:1.4rem;"></h2>
+    <div class="zone-controls">
+      <button onclick="fullscreenZone()">⛶ Fullscreen</button>
+      <button onclick="aboutBlankGame()">↗ Pop out</button>
+      <button onclick="closeZone()">✕ Close</button>
+    </div>
+  </div>
+  <iframe id="zoneFrame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-pointer-lock allow-orientation-lock"></iframe>
+</div>
+
+<script>
+const BASE     = "https://cdn.jsdelivr.net/gh/gn-math";
+const COVER    = BASE + "/covers@main";
+const HTML_CDN = BASE + "/html@main";
+const ZONES    = BASE + "/assets@main/zones.json";
+const DEP      = "https://raw.githubusercontent.com/SchoolgyGames/SchoolgyDepenencies/main";
+
+// ===================== CLOAKS =====================
+const CLOAKS = [
+  { id:"clever",    name:"Clever",        title:"Clever | Portal",               icon: DEP+"/clever.png" },
+  { id:"ixl",       name:"IXL",           title:"IXL | Dashboard",               icon: DEP+"/ixl.png" },
+  { id:"schoology", name:"Schoology",     title:"Schoology | Home",              icon: DEP+"/schoology.png" },
+  { id:"gclassroom",name:"G Classroom",   title:"Google Classroom",              icon:"https://ssl.gstatic.com/classroom/favicon.png" },
+  { id:"khan",      name:"Khan Academy",  title:"Khan Academy",                  icon:"https://www.khanacademy.org/favicon.ico" },
+  { id:"desmos",    name:"Desmos",        title:"Desmos | Graphing Calculator",  icon:"https://www.desmos.com/assets/img/favicon.ico" },
+  { id:"quizlet",   name:"Quizlet",       title:"Quizlet | Study Tools",         icon:"https://quizlet.com/favicon.ico" },
+  { id:"gdocs",     name:"Google Docs",   title:"Google Docs",                   icon:"https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico" },
+  { id:"gslides",   name:"G Slides",      title:"Google Slides",                 icon:"https://ssl.gstatic.com/docs/presentations/images/favicon5.ico" },
+  { id:"gdrive",    name:"Google Drive",  title:"Google Drive",                  icon:"https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png" },
+  { id:"canvas",    name:"Canvas",        title:"Canvas | Dashboard",            icon:"https://du11hjcvx0uqb.cloudfront.net/dist/images/favicon-e10d657a73.ico" },
+  { id:"nearpod",   name:"Nearpod",       title:"Nearpod | Home",                icon:"https://nearpod.com/favicon.ico" },
+  { id:"duolingo",  name:"Duolingo",      title:"Duolingo",                      icon:"https://d35aaqx5ub95lt.cloudfront.net/favicon.ico" },
+  { id:"wikipedia", name:"Wikipedia",     title:"Wikipedia",                     icon:"https://en.wikipedia.org/favicon.ico" },
+  { id:"google",    name:"Google",        title:"Google Search",                 icon:"https://www.google.com/favicon.ico" },
+];
+
+// Build cloak cards
+const grid = document.getElementById('cloakGrid');
+let selectedCloakId = null;
+
+CLOAKS.forEach(c => {
+  const card = document.createElement('div');
+  card.className = 'cloak-card';
+  card.id = 'cc-' + c.id;
+  card.onclick = () => selectCloak(c.id);
+  card.innerHTML = `<img src="${c.icon}" onerror="this.style.opacity='0'"><span class="cloak-card-name">${c.name}</span><span class="cloak-card-tab">${c.title.split('|')[0].trim()}</span>`;
+  grid.appendChild(card);
+});
+
+function selectCloak(id){
+  selectedCloakId = id;
+  document.querySelectorAll('.cloak-card').forEach(c=>c.classList.remove('active'));
+  document.getElementById('cc-'+id).classList.add('active');
+  const c = CLOAKS.find(x=>x.id===id);
+  document.getElementById('cloakStatus').textContent = 'Selected: ' + c.title;
+}
+
+function applyCloak(){
+  if(!selectedCloakId){ document.getElementById('cloakStatus').textContent='⚠ Pick a cloak first!'; return; }
+  const c = CLOAKS.find(x=>x.id===selectedCloakId);
+  document.title = c.title;
+  let fav = document.querySelector('link[rel="icon"]');
+  if(!fav){ fav=document.createElement('link');fav.rel='icon';document.head.appendChild(fav); }
+  fav.href = c.icon;
+  document.getElementById('cloakStatus').textContent = '✓ Active: ' + c.title;
+}
+
+// ===================== SETTINGS =====================
+function openSettings(){ document.getElementById('settingsOverlay').classList.add('open'); }
+function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); }
+
+// ===================== TOP BAR =====================
+const topBar = document.getElementById('topBar');
+let lastY = 0;
+window.addEventListener('scroll', ()=>{
+  const y = window.scrollY;
+  topBar.classList.toggle('hidden', y > 110 && y > lastY);
+  lastY = y;
+});
+
+// ===================== PARTICLES =====================
+(function(){
+  const wrap = document.getElementById('particles');
+  for(let i=0;i<28;i++){
+    const p=document.createElement('div');
+    p.className='particle';
+    p.style.cssText=`left:${Math.random()*100}vw;width:${Math.random()*3+1.5}px;height:${Math.random()*3+1.5}px;animation-duration:${Math.random()*14+8}s;animation-delay:${Math.random()*-18}s;opacity:${Math.random()*0.4+0.15};`;
+    wrap.appendChild(p);
+  }
+})();
+
+// ===================== ZONES =====================
+const container  = document.getElementById('container');
+const zoneViewer = document.getElementById('zoneViewer');
+const zoneFrame  = document.getElementById('zoneFrame');
+const zoneName   = document.getElementById('zoneName');
+let zones = [];
+
+async function listZones(){
+  try{
+    const r = await fetch(ZONES+'?t='+Date.now());
+    zones = (await r.json()).filter(z=>z.id>=0);
+    displayZones(zones);
+  } catch(e){
+    container.innerHTML='<p style="grid-column:1/-1;font-family:\'Amatic SC\',cursive;font-size:1.5rem;color:rgba(196,181,253,0.5);padding:2rem">Could not load games — check your connection.</p>';
+  }
+}
+
+function displayZones(list){
+  container.innerHTML='';
+  list.forEach((file,i)=>{
+    const item=document.createElement('div');
+    item.className='zone-item';
+    item.style.animationDelay=(i*0.03)+'s';
+    item.onclick=()=>openZone(file);
+
+    const img=document.createElement('img');
+    img.src=file.cover.replace('{COVER_URL}',COVER).replace('{HTML_URL}',HTML_CDN);
+    img.loading='lazy';
+    img.alt=file.name;
+    img.onerror=()=>{img.style.background='rgba(124,58,237,0.18)';img.style.aspectRatio='1';};
+    item.appendChild(img);
+
+    const btn=document.createElement('button');
+    btn.className='name-btn';
+    btn.textContent=file.name;
+    item.appendChild(btn);
+
+    container.appendChild(item);
+  });
+}
+
+function filterZones(){
+  const q=document.getElementById('searchBar').value.toLowerCase();
+  displayZones(zones.filter(z=>z.name.toLowerCase().includes(q)));
+}
+
+async function openZone(file){
+  const url=file.url.replace('{HTML_URL}',HTML_CDN);
+  if(!url.includes('jsdelivr.net')&&!url.includes('raw.githubusercontent.com')){
+    window.open(url,'_blank'); return;
+  }
+  try{
+    const r=await fetch(url);
+    const html=await r.text();
+    zoneFrame.srcdoc=html;
+    zoneViewer.style.display='flex';
+    zoneName.textContent=file.name;
+  } catch(e){ alert('Could not load: '+file.name); }
+}
+
+function closeZone(){zoneViewer.style.display='none';zoneFrame.srcdoc='';}
+function fullscreenZone(){zoneFrame.requestFullscreen&&zoneFrame.requestFullscreen();}
+function aboutBlankGame(){
+  const w=window.open('about:blank','_blank');
+  if(w){w.document.open();w.document.write(zoneFrame.srcdoc);w.document.close();}
+}
+
+listZones();
+
+// Init status text
+document.getElementById('cloakStatus').textContent = CLOAKS.length + ' cloaks available — pick one above';
+</script>
+</body>
+</html>
