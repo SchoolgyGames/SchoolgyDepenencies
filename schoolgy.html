@@ -92,6 +92,39 @@ body{
   background-clip:text;
 }
 
+/* ================= TOP BAR NAV ================= */
+.top-bar-nav{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.nav-tab{
+  font-family:'Amatic SC',cursive;
+  font-size:1.4rem;
+  color:rgba(196,181,253,0.75);
+  background:none;
+  border:none;
+  cursor:pointer;
+  padding:5px 14px;
+  border-radius:8px;
+  transition:color 0.2s, background 0.2s;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+
+.nav-tab:hover{
+  color:#c4b5fd;
+  background:rgba(168,85,247,0.15);
+}
+
+.nav-tab.active{
+  color:#fff;
+  background:rgba(168,85,247,0.25);
+  border:1px solid rgba(168,85,247,0.4);
+}
+
 /* ================= SETTINGS BUTTON ================= */
 .settings-btn{
   font-family:'Amatic SC',cursive;
@@ -432,6 +465,64 @@ main{
   border:none;
   width:100%;
 }
+
+/* ================= PROXY PAGE ================= */
+#proxyPage{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:200;
+  flex-direction:column;
+}
+
+.proxy-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:0.8rem 1.5rem;
+  background:rgba(10,10,25,0.9);
+  border-bottom:1px solid rgba(168,85,247,0.35);
+  backdrop-filter:blur(10px);
+  flex-shrink:0;
+}
+
+.proxy-title{
+  font-family:'Amatic SC',cursive;
+  font-size:1.8rem;
+  background:linear-gradient(90deg,#ede9fe,#c4b5fd,#a855f7);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+
+.proxy-header-controls{
+  display:flex;
+  gap:10px;
+}
+
+.proxy-btn{
+  font-family:'Amatic SC',cursive;
+  font-size:1.3rem;
+  background:rgba(168,85,247,0.15);
+  border:1px solid rgba(168,85,247,0.35);
+  color:#c4b5fd;
+  padding:5px 16px;
+  border-radius:8px;
+  cursor:pointer;
+  transition:background 0.2s, color 0.2s;
+}
+
+.proxy-btn:hover{
+  background:rgba(168,85,247,0.3);
+  color:#fff;
+}
+
+#proxyFrame{
+  flex-grow:1;
+  border:none;
+  width:100%;
+  height:100%;
+}
 </style>
 </head>
 
@@ -445,7 +536,17 @@ main{
 
 <!-- TOP BAR -->
 <div class="top-bar" id="topBar">
-  <span class="top-bar-title">Schoolgy 5.0</span>
+  <span class="top-bar-title">Schoolgy 6.0</span>
+
+  <div class="top-bar-nav">
+    <button class="nav-tab active" id="tab-games" onclick="showTab('games')">
+      🎮 Games
+    </button>
+    <button class="nav-tab" id="tab-proxy" onclick="showTab('proxy')">
+      🌐 Proxy
+    </button>
+  </div>
+
   <button class="settings-btn" onclick="openSettings()">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <circle cx="12" cy="12" r="3"/>
@@ -488,7 +589,8 @@ main{
   </div>
 </div>
 
-<main>
+<!-- GAMES PAGE -->
+<main id="gamesPage">
   <div class="hero-wrapper">
     <h1 class="hero-title">Welcome to<br>Schoolgy 6.0</h1>
   </div>
@@ -502,6 +604,19 @@ main{
   <div id="container" class="zone-container">Loading...</div>
 </main>
 
+<!-- PROXY PAGE -->
+<div id="proxyPage">
+  <div class="proxy-header">
+    <span class="proxy-title">🌐 Proxy</span>
+    <div class="proxy-header-controls">
+      <button class="proxy-btn" onclick="openProxyBlank()">Open in Tab</button>
+      <button class="proxy-btn" onclick="fullscreenProxy()">Fullscreen</button>
+    </div>
+  </div>
+  <iframe id="proxyFrame" src="https://harshsmellsliketoes.fundacioncidea.org.ar/" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-orientation-lock allow-pointer-lock"></iframe>
+</div>
+
+<!-- GAME VIEWER -->
 <div id="zoneViewer">
   <div class="zone-header">
     <h2 id="zoneName"></h2>
@@ -520,6 +635,26 @@ const COVER_URL = BASE_CDN + "/covers@main";
 const HTML_URL  = BASE_CDN + "/html@main";
 const ZONES_URL = BASE_CDN + "/assets@main/zones.json";
 const DEP_URL   = "https://raw.githubusercontent.com/SchoolgyGames/SchoolgyDepenencies/main";
+
+/* ========== TAB SWITCHING ========== */
+function showTab(tab){
+  const gamesPage  = document.getElementById('gamesPage');
+  const proxyPage  = document.getElementById('proxyPage');
+  const tabGames   = document.getElementById('tab-games');
+  const tabProxy   = document.getElementById('tab-proxy');
+
+  if(tab === 'games'){
+    gamesPage.style.display  = 'block';
+    proxyPage.style.display  = 'none';
+    tabGames.classList.add('active');
+    tabProxy.classList.remove('active');
+  } else {
+    gamesPage.style.display  = 'none';
+    proxyPage.style.display  = 'flex';
+    tabProxy.classList.add('active');
+    tabGames.classList.remove('active');
+  }
+}
 
 /* ========== TAB CLOAK ========== */
 const cloaks = {
@@ -563,20 +698,14 @@ function applySpecificCloak(key){
     document.head.appendChild(fav);
   }
 
-  // Fetch icon and convert to base64 data URL to bypass cross-origin favicon restrictions
   fetch(c.icon)
     .then(r => r.blob())
     .then(blob => {
       const reader = new FileReader();
-      reader.onload = () => {
-        fav.href = reader.result;
-      };
+      reader.onload = () => { fav.href = reader.result; };
       reader.readAsDataURL(blob);
     })
-    .catch(() => {
-      // Fallback: try setting directly
-      fav.href = c.icon;
-    });
+    .catch(() => { fav.href = c.icon; });
 
   document.querySelectorAll('.cloak-card').forEach(el => el.classList.remove('active'));
   const card = document.getElementById('cloak-' + key);
@@ -608,7 +737,6 @@ async function listZones(){
   try {
     const r = await fetch(ZONES_URL + '?t=' + Date.now());
     zones = await r.json();
-    // Filter out the discord promo entry
     zones = zones.filter(z => z.id >= 0);
     displayZones(zones);
   } catch(e) {
@@ -674,6 +802,16 @@ function aboutBlank(){
   const w = window.open('about:blank');
   w.document.write(zoneFrame.srcdoc);
   w.document.close();
+}
+
+/* ========== PROXY ========== */
+function fullscreenProxy(){
+  const frame = document.getElementById('proxyFrame');
+  frame.requestFullscreen && frame.requestFullscreen();
+}
+
+function openProxyBlank(){
+  window.open('https://harshsmellsliketoes.fundacioncidea.org.ar/', '_blank');
 }
 
 listZones();
