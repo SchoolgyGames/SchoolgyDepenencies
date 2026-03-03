@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Schoolgy 5.0</title>
+<link rel="icon" id="favicon" href="" type="image/png">
+
+<link href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@700&family=UnifrakturMaguntia&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --purple:#7c3aed;
+  --purple2:#a855f7;
+  --cyan:#22d3ee;
+  --card:rgba(15,23,42,0.85);
+  --border:rgba(255,255,255,0.12);
+  --text:#ffffff;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+
+html,body{
+  width:100%;
+  height:100%;
+  background:black;
+}
+
+body{
+  font-family:'Segoe UI',sans-serif;
+  color:var(--text);
+  animation:pageFade 1.2s ease forwards;
+  opacity:0;
+}
+
+@keyframes pageFade{to{opacity:1;}}
+
+/* ================= VIDEO BACKGROUND ================= */
+#bg-video{
+  position:fixed;
+  top:50%;
+  left:50%;
+  min-width:100vw;
+  min-height:100vh;
+  width:auto;
+  height:auto;
+  transform:translate(-50%,-50%) scale(1.02);
+  object-fit:cover;
+  z-index:-10;
+  filter:contrast(1.35) brightness(0.9) saturate(1.55);
+}
+
+/* ================= OVERLAY ================= */
+.topo-overlay{
+  position:fixed;
+  inset:0;
+  z-index:-9;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 30% 40%, rgba(168,85,247,0.2), transparent 55%),
+    radial-gradient(circle at 70% 60%, rgba(124,58,237,0.18), transparent 55%),
+    linear-gradient(180deg, rgba(10,10,20,0.25), rgba(5,5,15,0.9));
+}
+
+/* ================= TOP BAR ================= */
+.top-bar{
+  position:fixed;
+  top:0; left:0; right:0;
+  padding:1rem 2.2rem;
+  z-index:100;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  backdrop-filter:blur(6px) saturate(140%);
+  background:rgba(10,10,25,0.35);
+  border-bottom:1px solid rgba(168,85,247,0.35);
+  transition:transform 0.35s ease, opacity 0.35s ease;
+}
+
+.top-bar.hidden{
+  transform:translateY(-100%);
+  opacity:0;
+  pointer-events:none;
+}
+
+.top-bar-title{
+  font-family:'Amatic SC',cursive;
+  font-size:1.8rem;
+  color:transparent;
+  background-image:linear-gradient(90deg,#ede9fe,#c4b5fd,#a855f7);
+  -webkit-background-clip:text;
+  background-clip:text;
+}
+
+/* ================= SETTINGS BUTTON ================= */
+.settings-btn{
+  font-family:'Amatic SC',cursive;
+  font-size:1.5rem;
+  color:rgba(196,181,253,0.75);
+  background:none;
+  border:none;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:7px;
+  padding:4px 12px;
+  border-radius:8px;
+  transition:color 0.2s, background 0.2s;
+}
+
+.settings-btn:hover{
+  color:#c4b5fd;
+  background:rgba(168,85,247,0.15);
+}
+
+.settings-btn svg{
+  width:17px;
+  height:17px;
+  transition:transform 0.5s ease;
+}
+
+.settings-btn:hover svg{ transform:rotate(60deg); }
+
+/* ================= SETTINGS OVERLAY ================= */
+#settingsOverlay{
+  position:fixed;
+  inset:0;
+  z-index:500;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity 0.3s ease;
+}
+
+#settingsOverlay.open{
+  opacity:1;
+  pointer-events:all;
+}
+
+.settings-backdrop{
+  position:absolute;
+  inset:0;
+  background:rgba(5,3,15,0.78);
+  backdrop-filter:blur(14px);
+}
+
+.settings-panel{
+  position:relative;
+  z-index:1;
+  width:min(92vw, 600px);
+  background:rgba(12,8,28,0.97);
+  border:1px solid rgba(168,85,247,0.4);
+  border-radius:22px;
+  box-shadow:
+    0 0 70px rgba(124,58,237,0.4),
+    0 0 140px rgba(168,85,247,0.15),
+    inset 0 1px 0 rgba(255,255,255,0.07);
+  transform:translateY(28px) scale(0.97);
+  transition:transform 0.4s cubic-bezier(0.34,1.5,0.64,1);
+  overflow:hidden;
+}
+
+#settingsOverlay.open .settings-panel{
+  transform:translateY(0) scale(1);
+}
+
+/* Panel header */
+.sp-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:1.5rem 1.8rem 1.1rem;
+  border-bottom:1px solid rgba(168,85,247,0.18);
+}
+
+.sp-title{
+  font-family:'Amatic SC',cursive;
+  font-size:2.4rem;
+  background:linear-gradient(90deg,#ede9fe,#c4b5fd,#a855f7);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+
+.sp-close{
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.1);
+  color:rgba(196,181,253,0.65);
+  width:34px; height:34px;
+  border-radius:50%;
+  font-size:1.1rem;
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:background 0.2s, color 0.2s;
+}
+
+.sp-close:hover{ background:rgba(168,85,247,0.25); color:#fff; }
+
+/* Panel body */
+.sp-body{ padding:1.6rem 1.8rem 2rem; }
+
+.sp-section-label{
+  font-family:'Amatic SC',cursive;
+  font-size:1.25rem;
+  color:rgba(196,181,253,0.45);
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  margin-bottom:1rem;
+}
+
+/* Tab cloak cards */
+.cloak-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+  margin-bottom:1.4rem;
+}
+
+.cloak-card{
+  background:rgba(255,255,255,0.03);
+  border:2px solid rgba(255,255,255,0.07);
+  border-radius:14px;
+  padding:1rem 0.8rem;
+  cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:10px;
+  transition:border-color 0.2s, background 0.2s, transform 0.15s;
+  text-align:center;
+}
+
+.cloak-card:hover{
+  background:rgba(168,85,247,0.08);
+  border-color:rgba(168,85,247,0.4);
+  transform:translateY(-2px);
+}
+
+.cloak-card.active{
+  border-color:#a855f7;
+  background:rgba(168,85,247,0.12);
+  box-shadow:0 0 18px rgba(168,85,247,0.25);
+}
+
+.cloak-card img{
+  width:36px; height:36px;
+  object-fit:contain;
+  border-radius:6px;
+}
+
+.cloak-card-name{
+  font-size:0.78rem;
+  font-weight:500;
+  color:#c4b5fd;
+  line-height:1.3;
+}
+
+.cloak-card-title{
+  font-family:'Amatic SC',cursive;
+  font-size:1rem;
+  color:rgba(196,181,253,0.5);
+  line-height:1.2;
+}
+
+/* Apply button */
+.cloak-apply{
+  width:100%;
+  padding:0.85rem;
+  background:linear-gradient(90deg,#7c3aed,#a855f7);
+  border:none;
+  border-radius:12px;
+  color:#fff;
+  font-family:'Amatic SC',cursive;
+  font-size:1.5rem;
+  cursor:pointer;
+  letter-spacing:0.05em;
+  transition:opacity 0.2s, transform 0.15s;
+  box-shadow:0 0 20px rgba(168,85,247,0.4);
+}
+
+.cloak-apply:hover{ opacity:0.88; transform:translateY(-1px); }
+.cloak-apply:active{ transform:translateY(0); }
+
+/* Status line */
+.cloak-status{
+  font-family:'Amatic SC',cursive;
+  font-size:1.1rem;
+  color:rgba(196,181,253,0.45);
+  text-align:center;
+  margin-top:0.9rem;
+}
+
+/* ================= LAYOUT ================= */
+main{
+  position:relative;
+  z-index:10;
+  padding:7.5rem 1.5rem 3rem;
+  max-width:1200px;
+  margin:auto;
+  text-align:center;
+}
+
+/* ================= HERO ================= */
+.hero-wrapper{margin-bottom:3rem;}
+
+.hero-title{
+  font-family:'UnifrakturMaguntia',cursive;
+  font-size:clamp(4.5rem,10vw,7rem);
+  line-height:1.05;
+  background:linear-gradient(90deg,#fff,#ddd6fe,#c4b5fd,#fff);
+  background-size:300% 300%;
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  animation:glowShift 6s ease infinite;
+}
+
+@keyframes glowShift{
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
+}
+
+.hero-subtext{
+  font-family:'Amatic SC',cursive;
+  font-size:2rem;
+  opacity:0.85;
+  margin-bottom:3rem;
+}
+
+/* ================= SEARCH ================= */
+.search-container{
+  max-width:620px;
+  margin:0 auto 3.5rem;
+  position:relative;
+}
+
+.search-container::before{
+  content:"";
+  position:absolute;
+  inset:-3px;
+  border-radius:18px;
+  background:linear-gradient(120deg,rgba(124,58,237,0.9),rgba(168,85,247,0.9),rgba(124,58,237,0.9));
+  filter:blur(22px);
+  opacity:0.65;
+  z-index:-2;
+}
+
+#searchBar{
+  width:100%;
+  padding:1.3rem 1.6rem;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,0.18);
+  background:rgba(20,10,40,0.65);
+  backdrop-filter:blur(16px) saturate(160%);
+  color:white;
+  font-size:1.05rem;
+  outline:none;
+}
+
+/* ================= GRID ================= */
+.zone-container{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+  gap:20px;
+}
+
+.zone-item{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  overflow:hidden;
+  cursor:pointer;
+  transition:0.35s ease;
+}
+
+.zone-item:hover{
+  transform:translateY(-6px) scale(1.03);
+  border-color:var(--purple2);
+  box-shadow:0 0 35px rgba(168,85,247,0.45);
+}
+
+.zone-item img{
+  width:100%;
+  aspect-ratio:1;
+  object-fit:cover;
+}
+
+.zone-item button{
+  background:none;
+  border:none;
+  color:white;
+  padding:10px;
+  font-weight:bold;
+  width:100%;
+  height:60px;
+  cursor:pointer;
+}
+
+/* ================= VIEWER ================= */
+#zoneViewer{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.95);
+  display:none;
+  flex-direction:column;
+  z-index:999;
+}
+
+.zone-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:0.7rem 1rem;
+  background:rgba(15,23,42,0.95);
+}
+
+.zone-controls{display:flex;gap:10px;}
+
+.zone-controls button{
+  background:rgba(255,255,255,0.05);
+  border:1px solid var(--border);
+  color:white;
+  padding:0.4rem 0.8rem;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+#zoneFrame{
+  flex-grow:1;
+  border:none;
+  width:100%;
+}
+</style>
+</head>
+
+<body>
+
+<video id="bg-video" autoplay muted loop playsinline>
+  <source src="https://raw.githubusercontent.com/SchoolgyGames/SchoolgyDepenencies/main/abstract-purple-topo.1920x1080.mp4" type="video/mp4">
+</video>
+
+<div class="topo-overlay"></div>
+
+<!-- TOP BAR -->
+<div class="top-bar" id="topBar">
+  <span class="top-bar-title">Schoolgy 5.0</span>
+  <button class="settings-btn" onclick="openSettings()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+    </svg>
+    Settings
+  </button>
+</div>
+
+<!-- SETTINGS OVERLAY -->
+<div id="settingsOverlay">
+  <div class="settings-backdrop" onclick="closeSettings()"></div>
+  <div class="settings-panel">
+    <div class="sp-header">
+      <span class="sp-title">⚙ Settings</span>
+      <button class="sp-close" onclick="closeSettings()">✕</button>
+    </div>
+    <div class="sp-body">
+      <div class="sp-section-label">Tab Cloak</div>
+      <div class="cloak-grid">
+        <div class="cloak-card" id="cloak-clever" onclick="selectCloak('clever')">
+          <img src="https://raw.githubusercontent.com/SchoolgyGames/SchoolgyDepenencies/main/clever.png" alt="Clever" onerror="this.style.display='none'">
+          <span class="cloak-card-name">Clever</span>
+          <span class="cloak-card-title">Clever | Portal</span>
+        </div>
+        <div class="cloak-card" id="cloak-ixl" onclick="selectCloak('ixl')">
+          <img src="https://raw.githubusercontent.com/SchoolgyGames/SchoolgyDepenencies/main/ixl.png" alt="IXL" onerror="this.style.display='none'">
+          <span class="cloak-card-name">IXL</span>
+          <span class="cloak-card-title">IXL | Dashboard</span>
+        </div>
+        <div class="cloak-card" id="cloak-schoology" onclick="selectCloak('schoology')">
+          <img src="https://raw.githubusercontent.com/SchoolgyGames/SchoolgyDepenencies/main/schoology.png" alt="Schoology" onerror="this.style.display='none'">
+          <span class="cloak-card-name">Schoology</span>
+          <span class="cloak-card-title">Schoology | Home</span>
+        </div>
+      </div>
+      <button class="cloak-apply" onclick="applyCloak()">Apply Cloak</button>
+      <div class="cloak-status" id="cloakStatus">No cloak active — select one above</div>
+    </div>
+  </div>
+</div>
+
+<main>
+  <div class="hero-wrapper">
+    <h1 class="hero-title">Welcome to<br>Schoolgy 5.0</h1>
+  </div>
+
+  <p class="hero-subtext">Idk what to put here</p>
+
+  <div class="search-container">
+    <input type="text" id="searchBar" placeholder="Search games..." oninput="filterZones()">
+  </div>
+
+  <div id="container" class="zone-container">Loading...</div>
+</main>
+
+<div id="zoneViewer">
+  <div class="zone-header">
+    <h2 id="zoneName"></h2>
+    <div class="zone-controls">
+      <button onclick="fullscreenZone()">Fullscreen</button>
+      <button onclick="aboutBlank()">Open</button>
+      <button onclick="closeZone()">Close</button>
+    </div>
+  </div>
+  <iframe id="zoneFrame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-orientation-lock allow-pointer-lock"></iframe>
+</div>
+
+<script>
+const BASE_CDN = "https://cdn.jsdelivr.net/gh/gn-math";
+const COVER_URL = BASE_CDN + "/covers@main";
+const HTML_URL  = BASE_CDN + "/html@main";
+const ZONES_URL = BASE_CDN + "/assets@main/zones.json";
+const DEP_URL   = "https://raw.githubusercontent.com/SchoolgyGames/SchoolgyDepenencies/main";
+
+/* ========== TAB CLOAK ========== */
+const cloaks = {
+  clever:   { title:"Clever | Portal",   icon: DEP_URL + "/clever.png"   },
+  ixl:      { title:"IXL | Dashboard",   icon: DEP_URL + "/ixl.png"      },
+  schoology:{ title:"Schoology | Home",  icon: DEP_URL + "/schoology.png"}
+};
+
+let selectedCloak = null;
+
+// Pick a random cloak on load
+const cloakKeys = Object.keys(cloaks);
+const randomKey = cloakKeys[Math.floor(Math.random() * cloakKeys.length)];
+applySpecificCloak(randomKey);
+
+function selectCloak(key){
+  selectedCloak = key;
+  document.querySelectorAll('.cloak-card').forEach(c => c.classList.remove('active'));
+  document.getElementById('cloak-' + key).classList.add('active');
+  document.getElementById('cloakStatus').textContent = 'Selected: ' + cloaks[key].title;
+}
+
+function applyCloak(){
+  if(!selectedCloak){ 
+    document.getElementById('cloakStatus').textContent = '⚠ Pick a cloak first!';
+    return;
+  }
+  applySpecificCloak(selectedCloak);
+  document.getElementById('cloakStatus').textContent = '✓ Cloak applied: ' + cloaks[selectedCloak].title;
+}
+
+function applySpecificCloak(key){
+  const c = cloaks[key];
+  document.title = c.title;
+
+  let fav = document.getElementById('favicon');
+  if(!fav){
+    fav = document.createElement('link');
+    fav.rel = 'icon';
+    fav.id = 'favicon';
+    document.head.appendChild(fav);
+  }
+
+  // Fetch icon and convert to base64 data URL to bypass cross-origin favicon restrictions
+  fetch(c.icon)
+    .then(r => r.blob())
+    .then(blob => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        fav.href = reader.result;
+      };
+      reader.readAsDataURL(blob);
+    })
+    .catch(() => {
+      // Fallback: try setting directly
+      fav.href = c.icon;
+    });
+
+  document.querySelectorAll('.cloak-card').forEach(el => el.classList.remove('active'));
+  const card = document.getElementById('cloak-' + key);
+  if(card) card.classList.add('active');
+  selectedCloak = key;
+}
+
+/* ========== SETTINGS ========== */
+function openSettings(){ document.getElementById('settingsOverlay').classList.add('open'); }
+function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); }
+
+/* ========== TOP BAR HIDE ========== */
+const topBar = document.getElementById('topBar');
+let lastScroll = 0;
+window.addEventListener('scroll', () => {
+  const y = window.scrollY;
+  topBar.classList.toggle('hidden', y > 120 && y > lastScroll);
+  lastScroll = y;
+});
+
+/* ========== ZONES ========== */
+const container  = document.getElementById('container');
+const zoneViewer = document.getElementById('zoneViewer');
+const zoneFrame  = document.getElementById('zoneFrame');
+const zoneName   = document.getElementById('zoneName');
+let zones = [];
+
+async function listZones(){
+  try {
+    const r = await fetch(ZONES_URL + '?t=' + Date.now());
+    zones = await r.json();
+    // Filter out the discord promo entry
+    zones = zones.filter(z => z.id >= 0);
+    displayZones(zones);
+  } catch(e) {
+    container.innerHTML = '<p style="color:#c4b5fd;font-family:\'Amatic SC\',cursive;font-size:1.5rem;">Failed to load games. Check your connection.</p>';
+  }
+}
+
+function displayZones(list){
+  container.innerHTML = '';
+  list.forEach(file => {
+    const item = document.createElement('div');
+    item.className = 'zone-item';
+    item.onclick = () => openZone(file);
+
+    const img = document.createElement('img');
+    img.src = file.cover.replace('{COVER_URL}', COVER_URL).replace('{HTML_URL}', HTML_URL);
+    img.loading = 'lazy';
+    img.onerror = () => { img.style.background = 'rgba(124,58,237,0.2)'; };
+    item.appendChild(img);
+
+    const btn = document.createElement('button');
+    btn.textContent = file.name;
+    item.appendChild(btn);
+
+    container.appendChild(item);
+  });
+}
+
+function filterZones(){
+  const q = document.getElementById('searchBar').value.toLowerCase();
+  displayZones(zones.filter(z => z.name.toLowerCase().includes(q)));
+}
+
+async function openZone(file){
+  const url = file.url.replace('{HTML_URL}', HTML_URL);
+  if(url.startsWith('https://discord.gg') || url.startsWith('http')){
+    if(!url.includes('jsdelivr.net') && !url.includes('raw.githubusercontent.com')){
+      window.open(url,'_blank');
+      return;
+    }
+  }
+  try {
+    const r = await fetch(url);
+    const html = await r.text();
+    zoneFrame.srcdoc = html;
+    zoneViewer.style.display = 'flex';
+    zoneName.textContent = file.name;
+  } catch(e) {
+    alert('Could not load game: ' + file.name);
+  }
+}
+
+function closeZone(){
+  zoneViewer.style.display = 'none';
+  zoneFrame.srcdoc = '';
+}
+
+function fullscreenZone(){
+  zoneFrame.requestFullscreen && zoneFrame.requestFullscreen();
+}
+
+function aboutBlank(){
+  const w = window.open('about:blank');
+  w.document.write(zoneFrame.srcdoc);
+  w.document.close();
+}
+
+listZones();
+</script>
+</body>
+</html>
