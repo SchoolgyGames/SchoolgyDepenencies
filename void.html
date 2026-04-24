@@ -64,11 +64,8 @@ body::before{
 body{
   font-family:'Segoe UI',sans-serif;
   color:var(--text);
-  animation:pageFade 1.2s ease forwards;
-  opacity:0;
+  opacity:1;
 }
-
-@keyframes pageFade{to{opacity:1;}}
 
 /* ================= TOP BAR ================= */
 .top-bar{
@@ -613,10 +610,110 @@ main{
   width:100%;
   height:100%;
 }
+
+/* ================= LOADER ================= */
+#void-loader{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  background:#000;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:2.5rem;
+  transition:opacity 0.9s ease;
+}
+
+#void-loader.fade-out{
+  opacity:0;
+  pointer-events:none;
+}
+
+.loader-logo{
+  width:clamp(80px,15vw,130px);
+  height:auto;
+  animation:loaderPulse 2s ease-in-out infinite;
+}
+
+@keyframes loaderPulse{
+  0%,100%{ filter: drop-shadow(0 0 14px rgba(138,43,226,0.9)) drop-shadow(0 0 35px rgba(100,0,200,0.6)); opacity:0.85; }
+  50%{ filter: drop-shadow(0 0 28px rgba(160,60,255,1)) drop-shadow(0 0 60px rgba(130,0,230,0.8)); opacity:1; }
+}
+
+.loader-bar-wrap{
+  width:clamp(180px,30vw,280px);
+  height:3px;
+  background:rgba(168,85,247,0.12);
+  border-radius:99px;
+  overflow:hidden;
+}
+
+.loader-bar{
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg, #7c3aed, #c084fc, #7c3aed);
+  background-size:200% 100%;
+  border-radius:99px;
+  animation:barFill 2.2s cubic-bezier(0.4,0,0.2,1) forwards,
+            barShimmer 1.2s linear infinite;
+}
+
+@keyframes barFill{
+  0%  { width:0%;   }
+  60% { width:75%;  }
+  85% { width:90%;  }
+  100%{ width:100%; }
+}
+
+@keyframes barShimmer{
+  0%  { background-position:200% 0; }
+  100%{ background-position:-200% 0; }
+}
+
+.loader-text{
+  font-family:'Amatic SC',cursive;
+  font-size:1.15rem;
+  color:rgba(196,181,253,0.45);
+  letter-spacing:0.25em;
+  text-transform:uppercase;
+  animation:loaderTextPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes loaderTextPulse{
+  0%,100%{ opacity:0.45; }
+  50%{ opacity:0.75; }
+}
+
 </style>
 </head>
 
 <body>
+<!-- LOADER -->
+<div id="void-loader">
+  <svg class="loader-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="lBloom" x="-60%" y="-60%" width="220%" height="220%">
+        <feGaussianBlur stdDeviation="7" result="b1"/>
+        <feGaussianBlur stdDeviation="3" result="b2"/>
+        <feMerge><feMergeNode in="b1"/><feMergeNode in="b2"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <filter id="lEdge" x="-30%" y="-30%" width="160%" height="160%">
+        <feGaussianBlur stdDeviation="2.5" result="e"/>
+        <feMerge><feMergeNode in="e"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <text x="50" y="88" text-anchor="middle" font-family="'Red Hat Display',sans-serif" font-weight="900" font-size="92" fill="none" stroke="#3b0070" stroke-width="22" stroke-linejoin="round" filter="url(#lBloom)">V</text>
+    <text x="50" y="88" text-anchor="middle" font-family="'Red Hat Display',sans-serif" font-weight="900" font-size="92" fill="none" stroke="#7c22d4" stroke-width="13" stroke-linejoin="round" filter="url(#lEdge)">V</text>
+    <text x="50" y="88" text-anchor="middle" font-family="'Red Hat Display',sans-serif" font-weight="900" font-size="92" fill="none" stroke="#a855f7" stroke-width="7" stroke-linejoin="round" filter="url(#lEdge)">V</text>
+    <text x="50" y="88" text-anchor="middle" font-family="'Red Hat Display',sans-serif" font-weight="900" font-size="92" fill="none" stroke="#d8b4fe" stroke-width="2.5" stroke-linejoin="round">V</text>
+    <text x="50" y="88" text-anchor="middle" font-family="'Red Hat Display',sans-serif" font-weight="900" font-size="92" fill="black">V</text>
+  </svg>
+  <div class="loader-bar-wrap"><div class="loader-bar"></div></div>
+  <span class="loader-text">Loading</span>
+</div>
+
+
 <video id="bg-video" autoplay muted loop playsinline></video>
 
 <div class="topo-overlay"></div>
@@ -709,7 +806,7 @@ main{
 <main id="gamesPage">
   <div class="hero-wrapper">
     <h1 class="hero-title">The Void</h1>
-    <svg class="hero-logo-svg" viewBox="0 0 780 190" xmlns="http://www.w3.org/2000/svg" style="background:transparent;">
+    <svg class="hero-logo-svg" viewBox="0 0 920 190" xmlns="http://www.w3.org/2000/svg" style="background:transparent;">
       <defs>
         <!-- WIDE OUTER BLOOM — deep purple spreads far -->
         <filter id="fBloom" x="-25%" y="-120%" width="150%" height="340%">
@@ -734,64 +831,64 @@ main{
       </defs>
 
       <!-- L1: Deepest dark purple wide bloom -->
-      <text x="390" y="158"
+      <text x="460" y="158"
         text-anchor="middle"
         font-family="'Red Hat Display', sans-serif"
-        font-weight="900" font-size="148" letter-spacing="12"
+        font-weight="900" font-size="148" letter-spacing="28"
         fill="none" stroke="#2d005c" stroke-width="48"
         stroke-linejoin="round" filter="url(#fBloom)" opacity="1"
       >VOID</text>
 
       <!-- L2: Deep purple bloom -->
-      <text x="390" y="158"
+      <text x="460" y="158"
         text-anchor="middle"
         font-family="'Red Hat Display', sans-serif"
-        font-weight="900" font-size="148" letter-spacing="12"
+        font-weight="900" font-size="148" letter-spacing="28"
         fill="none" stroke="#5b0fa8" stroke-width="32"
         stroke-linejoin="round" filter="url(#fBloom)" opacity="0.9"
       >VOID</text>
 
       <!-- L3: Mid purple -->
-      <text x="390" y="158"
+      <text x="460" y="158"
         text-anchor="middle"
         font-family="'Red Hat Display', sans-serif"
-        font-weight="900" font-size="148" letter-spacing="12"
+        font-weight="900" font-size="148" letter-spacing="28"
         fill="none" stroke="#8b2be2" stroke-width="18"
         stroke-linejoin="round" filter="url(#fMid)" opacity="0.95"
       >VOID</text>
 
       <!-- L4: Bright purple halo -->
-      <text x="390" y="158"
+      <text x="460" y="158"
         text-anchor="middle"
         font-family="'Red Hat Display', sans-serif"
-        font-weight="900" font-size="148" letter-spacing="12"
+        font-weight="900" font-size="148" letter-spacing="28"
         fill="none" stroke="#a855f7" stroke-width="10"
         stroke-linejoin="round" filter="url(#fEdge)" opacity="1"
       >VOID</text>
 
       <!-- L5: Bright lavender tight rim -->
-      <text x="390" y="158"
+      <text x="460" y="158"
         text-anchor="middle"
         font-family="'Red Hat Display', sans-serif"
-        font-weight="900" font-size="148" letter-spacing="12"
+        font-weight="900" font-size="148" letter-spacing="28"
         fill="none" stroke="#c084fc" stroke-width="5"
         stroke-linejoin="round" filter="url(#fHot)" opacity="1"
       >VOID</text>
 
       <!-- L6: White-hot inner edge -->
-      <text x="390" y="158"
+      <text x="460" y="158"
         text-anchor="middle"
         font-family="'Red Hat Display', sans-serif"
-        font-weight="900" font-size="148" letter-spacing="12"
+        font-weight="900" font-size="148" letter-spacing="28"
         fill="none" stroke="#ede9fe" stroke-width="1.8"
         stroke-linejoin="round" opacity="0.9"
       >VOID</text>
 
       <!-- L7: Pure black letter face -->
-      <text x="390" y="158"
+      <text x="460" y="158"
         text-anchor="middle"
         font-family="'Red Hat Display', sans-serif"
-        font-weight="900" font-size="148" letter-spacing="12"
+        font-weight="900" font-size="148" letter-spacing="28"
         fill="#000000"
       >VOID</text>
     </svg>
@@ -852,12 +949,25 @@ let selectedBg = null;
 let activeBgId = null;
 
 function initBackground(){
-  // Pick random, avoiding same as last session
   const last = localStorage.getItem('voidLastBg');
   const pool = backgrounds.filter(b => b.id !== last);
   const rand = pool.length ? pool[Math.floor(Math.random() * pool.length)] : backgrounds[0];
   setBackground(rand.id, true);
   buildBgGrid();
+
+  // Dismiss loader after video gets a chance to buffer (min 2.4s, or on canplay)
+  const vid = document.getElementById('bg-video');
+  let dismissed = false;
+  function dismiss(){
+    if(dismissed) return;
+    dismissed = true;
+    const loader = document.getElementById('void-loader');
+    loader.classList.add('fade-out');
+    setTimeout(() => loader.style.display = 'none', 950);
+  }
+  vid.addEventListener('canplay', () => setTimeout(dismiss, 400));
+  // Fallback — always dismiss after 3.5s even if video is slow
+  setTimeout(dismiss, 3500);
 }
 
 function setBackground(id, instant){
